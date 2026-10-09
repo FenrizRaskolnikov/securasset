@@ -1,9 +1,11 @@
 <script lang="ts">
   import PocketBase from 'pocketbase';
 
-  let { sucursal = $bindable(), sucursales, stats, onSincronizar } =$props();
+  let { sucursal = $bindable(), sucursales, stats, onSincronizar } = $props();
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 </script>
 
 <nav class="navbar is-dark is-spaced has-shadow" aria-label="main navigation">

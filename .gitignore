@@ -26,7 +26,7 @@ dist-ssr
 # Configuración de variables de entorno secretas
 .env
 .env.*
-
+git init
 # Base de Datos local de PocketBase
 database/pb_data/
 pb_data/

@@ -1,3 +1,4 @@
+import os
 import platform
 import subprocess
 import socket
@@ -6,11 +7,14 @@ import re
 import time
 import json
 import threading
+from dotenv import load_dotenv
 
-# Configuración de backend
-PB_URL = "http://127.0.0.1:8090"
-AGENT_USER = "agente_worker@antumalal.com"
-AGENT_PASS = "agente123"
+# Cargar variables de entorno del archivo .env
+load_dotenv()
+
+PB_URL = os.getenv("PUBLIC_POCKETBASE_INTERNAL_URL") or os.getenv("PUBLIC_POCKETBASE_URL") or "http://127.0.0.1:8090"
+AGENT_USER = os.getenv("AGENT_USER")
+AGENT_PASS = os.getenv("AGENT_PASS")
 
 OS_TYPE = platform.system()  # 'Windows' o 'Linux'
 
@@ -250,7 +254,6 @@ def sincronizar_activo_y_evaluacion(forzado_manual=False):
     score_real = calcular_score_seguridad(bitlocker_ok, edr_ok, parches_ok, cantidad_admins)
     print(f"[DATOS] Host: {hostname} | IP: {ip_local} | Score: {score_real}/100")
 
-    # 1. Obtener o crear Activo y limpiar bandera de re-escaneo
     activo_id = None
     try:
         url_activos = f"{PB_URL}/api/collections/activos/records"
@@ -383,7 +386,6 @@ def escuchar_tiempo_real():
                                     rec_hostname = record.get("hostname")
                                     flag = record.get("forzar_escaneo_manual")
                                     
-                                    # Log para monitorear cualquier actualización en la tabla activos
                                     print(f"[REALTIME EVENTO] Activo actualizado: {rec_hostname} | Flag manual: {flag} ({type(flag)})")
 
                                     if rec_hostname == hostname:
@@ -422,19 +424,16 @@ if __name__ == "__main__":
         print("[FATAL] No se pudo establecer comunicación con el servidor PocketBase. Saliendo.")
         exit(1)
     
-    # Iniciar hilo secundario para escuchar Realtime
     hilo_realtime = threading.Thread(target=escuchar_tiempo_real, daemon=True)
     hilo_realtime.start()
 
     print("\n[PROGRAMADOR] El agente ejecutará un ciclo completo cada 5 minutos.")
     
-    # Ejecutar primera sincronización inicial al arrancar
     try:
         sincronizar_activo_y_evaluacion(forzado_manual=False)
     except Exception as e:
         print(f"[ERROR CICLO INICIAL] {e}")
 
-    # Bucle principal de ciclo periódico cada 5 minutos
     while True:
         time.sleep(300)
         try:

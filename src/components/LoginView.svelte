@@ -1,10 +1,11 @@
 <script lang="ts">
   import PocketBase from 'pocketbase';
 
-  
   let { onLoginExito }: { onLoginExito?: () => void } = $props();
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
   let email = $state('');
   let password = $state('');
@@ -38,7 +39,6 @@
       <div class="columns is-centered">
         <div class="column is-5-tablet is-4-desktop">
           
-          <!-- Logo y Encabezado Superior -->
           <div class="has-text-centered mb-5">
             <div class="logo-circle mb-3">
               <img src="/logo.jpg" alt="Logo Grupo Antumalal" class="logo-img" />
@@ -51,11 +51,9 @@
             </p>
           </div>
 
-          <!-- Tarjeta de Login Estilo Tarjeta Blanca -->
           <div class="box p-5" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             <div class="has-text-centered mb-4">
               <p class="is-size-7 has-text-grey text-uppercase has-text-weight-bold" style="letter-spacing: 1px;">Iniciar sesión</p>
-              
             </div>
 
             {#if errorMsg}
@@ -65,7 +63,6 @@
             {/if}
 
             <form onsubmit={handleLogin}>
-              <!-- Campo de Correo con Icono -->
               <div class="field">
                 <label class="label is-small has-text-grey-dark" for="login-email">Correo</label>
                 <div class="control has-icons-left">
@@ -83,7 +80,6 @@
                 </div>
               </div>
 
-              <!-- Campo de Contraseña con Icono -->
               <div class="field mb-5">
                 <label class="label is-small has-text-grey-dark" for="login-password">Contraseña</label>
                 <div class="control has-icons-left">
@@ -101,7 +97,6 @@
                 </div>
               </div>
 
-              <!-- Botón de Ingreso Naranja -->
               <button 
                 class="button is-warning is-fullwidth {cargando ? 'is-loading' : ''}" 
                 type="submit"
@@ -112,7 +107,6 @@
               </button>
             </form>
 
-            <!-- Pie de la tarjeta -->
             <div class="has-text-centered mt-4">
               <p class="is-size-7 has-text-grey-light">Acceso protegido — Grupo Antumalal</p>
             </div>
@@ -125,7 +119,6 @@
 </div>
 
 <style>
-  /* Círculo contenedor del logotipo superior */
   .logo-circle {
     width: 65px;
     height: 65px;
@@ -146,7 +139,6 @@
     object-fit: contain;
     padding: 5px;
   }
-  /* Estilos específicos para el botón naranja de acción */
   .button.is-warning {
     background-color: #f59e0b !important;
     border-color: transparent;

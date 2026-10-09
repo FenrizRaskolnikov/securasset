@@ -2,12 +2,16 @@ const { exec } = require('child_process');
 const http = require('http');
 const https = require('https');
 const tls = require('tls');
+require('dotenv').config();
 
 const EventModule = require('eventsource');
 global.EventSource = EventModule.EventSource || EventModule;
 const PocketBase = require('pocketbase/cjs');
 
-const PB_URL = 'http://127.0.0.1:8090';
+const PB_URL = process.env.PUBLIC_POCKETBASE_INTERNAL_URL || process.env.PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL;
+const PB_ADMIN_PASS = process.env.PB_ADMIN_PASS;
+
 const pb = new PocketBase(PB_URL);
 
 // Desactivar auto-cancelación (Fundamental para workers backend)
@@ -424,7 +428,7 @@ async function iniciarSuscripcionRealtime() {
 // Ciclo principal de auditoría programada
 async function cicloAuditoriaRed() {
   try {
-    await pb.collection('_superusers').authWithPassword('prueba@prueba.com', 'Admin12345');
+    await pb.collection('_superusers').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASS);
 
     // 1. Limpiar cualquier estado previo atascado en PocketBase
     await limpiarSolicitudesPendientes();

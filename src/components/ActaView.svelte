@@ -4,7 +4,9 @@
 
   let { id }: { id: string } = $props();
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
   let activo = $state<any>(null);
   let evalEndpoint = $state<any>(null);
@@ -25,7 +27,6 @@
 
       cargando = false;
 
-      // Esperar a que renderice la imagen del QR y lanzar la impresión
       setTimeout(() => {
         window.print();
       }, 600);

@@ -10,10 +10,7 @@ function esc(v: any): string {
 
 function generarQrLocal(activo: { id: string }): string {
     try {
-        let base = 'http://127.0.0.1:5173';
-        if (typeof window !== 'undefined' && window.location) {
-            base = `${window.location.protocol}//${window.location.host}`;
-        }
+        let base = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '';
         const payload = `${base}/?ver=${activo.id}`;
         const qr = qrcode(0, 'M');
         qr.addData(payload);
@@ -80,7 +77,6 @@ export function generarActaPdf(
             <tr><th>Admins Locales</th><td>${esc(admins)}</td></tr>
         `;
     } else {
-        // --- SERVIDORES Y NVRs --- (Validación leyendo el array de vulnerabilidades)
         let passDefault = 'Segura / Cambiada';
         if (evaluacionRed) {
             let listaVuls: string[] = [];

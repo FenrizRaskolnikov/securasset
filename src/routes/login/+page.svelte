@@ -1,7 +1,9 @@
 <script lang="ts">
   import PocketBase from 'pocketbase';
 
-  const pb = new PocketBase('http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
   let email = $state('');
   let password = $state('');
@@ -14,10 +16,7 @@
     errorMsg = '';
 
     try {
-      // Autenticar con PocketBase
       await pb.collection('users').authWithPassword(email, password);
-      
-      // Redirigir al dashboard principal usando JavaScript nativo
       window.location.href = '/'; 
     } catch (err) {
       console.error(err);

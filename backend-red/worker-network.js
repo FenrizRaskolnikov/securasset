@@ -1,7 +1,12 @@
 const { exec } = require('child_process');
+require('dotenv').config();
 const PocketBase = require('pocketbase/cjs');
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const PB_URL = process.env.PUBLIC_POCKETBASE_INTERNAL_URL || process.env.PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL;
+const PB_ADMIN_PASS = process.env.PB_ADMIN_PASS;
+
+const pb = new PocketBase(PB_URL);
 
 let macsVistasEnMemoria = new Set();
 
@@ -64,7 +69,7 @@ function escanearRedNmap() {
 
 async function cicloShadowIT() {
   try {
-    await pb.collection('_superusers').authWithPassword('prueba@prueba.com', 'Admin12345');
+    await pb.collection('_superusers').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASS);
   } catch (authErr) {
     console.error('Error de autenticación en PocketBase:', authErr.message);
     setTimeout(cicloShadowIT, 10000);

@@ -18,7 +18,9 @@
     onSolicitarRescaneo?: (activo: any) => void;
   } = $props();
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
   let esAdmin = $derived(pb.authStore.model?.role === 'admin' || pb.authStore.model?.es_admin === true);
 

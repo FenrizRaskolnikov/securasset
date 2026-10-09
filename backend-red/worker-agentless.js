@@ -1,9 +1,14 @@
 const { exec } = require('child_process');
 const os = require('os');
+require('dotenv').config();
 const PocketBase = require('pocketbase/cjs');
 const EventModule = require('eventsource');
 global.EventSource = EventModule.EventSource || EventModule;
-const PB_URL = 'http://127.0.0.1:8090';
+
+const PB_URL = process.env.PUBLIC_POCKETBASE_INTERNAL_URL || process.env.PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL;
+const PB_ADMIN_PASS = process.env.PB_ADMIN_PASS;
+
 const pb = new PocketBase(PB_URL);
 
 // Control de concurrencia y estado Realtime
@@ -164,9 +169,6 @@ async function descubrirYAuditarRemoto(ipRemota) {
   return null;
 }
 
-// =========================================================================
-// FUNCIÓN DE CÁLCULO DE SCORE IGUAL A AGENTE.PY
-// =========================================================================
 function calcularScore(bitlocker, edr, parchesOk, cantidadAdmins = 0) {
   let score = 100;
   if (!bitlocker) score -= 25;
@@ -196,7 +198,7 @@ async function procesarEvaluacion(datos, esManual = false) {
       await pb.collection('activos').update(activoId, {
         ip: datos.ip,
         score_seguridad: score,
-        forzar_escaneo_manual: false // Limpiamos la bandera tras procesar
+        forzar_escaneo_manual: false
       });
     } else {
       const nuevoActivo = await pb.collection('activos').create({
@@ -228,7 +230,6 @@ async function procesarEvaluacion(datos, esManual = false) {
 
     let debeGuardarEval = true;
 
-    // Si es un re-escaneo manual forzamos el guardado del historial
     if (!esManual) {
       try {
         const ultimosRegistros = await pb.collection('evaluaciones_endpoints').getList(1, 1, {
@@ -296,7 +297,6 @@ async function auditarActivoAgentless(activoRecord) {
       await procesarEvaluacion(datosRemotos, true);
     } else {
       console.warn(`[AGENTLESS ADVERTENCIA] No se pudo conectar vía WinRM/SSH con host remoto: ${activoRecord.ip}`);
-      // Limpiamos el flag de todos modos para prevenir loops infinitos
       await pb.collection('activos').update(activoRecord.id, { forzar_escaneo_manual: false });
     }
   }
@@ -312,14 +312,12 @@ async function iniciarSuscripcionRealtime() {
         console.log(`[AGENTLESS REALTIME] Evento -> Host: ${e.record.hostname} | Flag: ${e.record.forzar_escaneo_manual} (${typeof e.record.forzar_escaneo_manual}) | Tipo: ${e.record.tipo}`);
       }
 
-      // Evaluación flexible del flag
       const esSolicitudManual = e.action === 'update' && 
         (e.record.forzar_escaneo_manual === true || String(e.record.forzar_escaneo_manual).toLowerCase() === 'true');
 
       if (esSolicitudManual) {
         const tipoNorm = (e.record.tipo || '').toLowerCase();
 
-        // Procesa activos tipo PC / Laptop
         if (tipoNorm === 'pc' || tipoNorm === 'laptop' || tipoNorm === 'desktop') {
           const assetId = e.record.id;
 
@@ -354,12 +352,10 @@ async function iniciarSuscripcionRealtime() {
 // Ciclo Principal de Ejecución
 async function cicloAgentless() {
   try {
-    await pb.collection('_superusers').authWithPassword('prueba@prueba.com', 'Admin12345');
+    await pb.collection('_superusers').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASS);
     
-    // Iniciar escucha en tiempo real inmediatamente después de autenticar
     await iniciarSuscripcionRealtime();
 
-    // Limpieza preventiva de flags colgados al iniciar
     const conFlagsPendientes = await pb.collection('activos').getFullList({
       filter: 'forzar_escaneo_manual = true || forzar_escaneo_manual = "true"'
     });
@@ -379,12 +375,10 @@ async function cicloAgentless() {
 
   console.log('\n[AGENTLESS] Iniciando ciclo de auditoría programado...');
 
-  // 1. Auditar el propio PC local
   console.log('Auditando PC local (Host)...');
   const datosLocal = await recolectarDatosPCLocal();
   await procesarEvaluacion(datosLocal);
 
-  // 2. Escanear rango de red para buscar otros PCs remotos
   const subred = '192.168.1.';
   for (let i = 2; i <= 10; i++) {
     const targetIp = `${subred}${i}`;

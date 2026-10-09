@@ -2,7 +2,6 @@
   import { onMount, onDestroy } from 'svelte';
   import PocketBase from 'pocketbase';
 
-  // Importar componentes hijos
   import Navbar from './components/Navbar.svelte';
   import StatsLevel from './components/StatsLevel.svelte';
   import SidebarMenu from './components/SidebarMenu.svelte';
@@ -14,9 +13,10 @@
   import Toast from './components/Toast.svelte';
   import LoginView from './components/LoginView.svelte';
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
-  // Estado de autenticación
   let estaAutenticado = $state(false);
 
   let activos = $state<any[]>([]);
@@ -33,17 +33,13 @@
   let perPage = $state(6);
   let currentPage = $state(1);
 
-  // Modales de Detalle / Auditoría
   let modalActivo = $state<any>(null);
   let showModal = $state(false);
 
-  // Modal de Edición de Activo
   let modalEditarActivo = $state<any>(null);
   let showEditModal = $state(false);
 
-  // Detectar si el usuario es administrador
   let esAdmin = $derived(pb.authStore.model?.role === 'admin');
-  // Guardar si la vista actual fue abierta desde un QR
   let urlVerId = $state<string | null>(null);
 
   function openModal(a: any){ modalActivo = a; showModal = true; }
@@ -51,20 +47,18 @@
     showModal = false; 
     setTimeout(() => { 
       modalActivo = null;
-      // Si estábamos en la vista móvil de QR y cerramos, enviamos al usuario al Dashboard limpio
       if (urlVerId) window.location.href = '/'; 
     }, 200); 
   }
 
   function openEditModal(activo: any) {
-    // Validar si el usuario actual es administrador
     const usuarioActual = pb.authStore.model;
     if (!usuarioActual || usuarioActual.role !== 'admin') {
       triggerToast("Acceso denegado: Se requiere rol de administrador para editar activos", "is-danger");
       return;
     }
 
-    showModal = false; // Cierra el modal de detalle si estaba abierto
+    showModal = false;
     modalEditarActivo = activo;
     showEditModal = true;
   }
@@ -100,11 +94,9 @@
     responsable: 'Desconocido'
   })));
 
-  // 1. Activos oficiales separados de Shadow IT
   let activosValidos = $derived(activos.filter(a => a.ip !== "192.168.1.1"));
   let todosLosDispositivos = $derived([...activosValidos, ...shadowFormateados]);
 
-  // 2. Filtro optimizado para separar Shadow IT y manejar tipos y score crítico
   let filtered = $derived.by(() => {
     const q = search.toLowerCase();
 
@@ -129,7 +121,6 @@
       if (filtroTipo === "Todos") {
         matchTipo = true;
       } else if (filtroTipo === "Crítico") {
-        // Aquí evaluamos el puntaje en lugar del tipo de equipo
         matchTipo = (a.score_seguridad ?? a.score) < 50;
       } else {
         matchTipo = a.tipo === filtroTipo;
@@ -139,7 +130,6 @@
     });
   });
 
-  // 3. Estadísticas basadas netamente en los activos oficiales
   let stats = $derived.by(() => {
     const oficiales = activosValidos;
     const conScore = oficiales.filter(a => (a.score_seguridad) != null);
@@ -164,7 +154,7 @@
   function setTipo(t: any){ 
     filtroTipo = t; 
     currentPage = 1; 
-    vista = "Inventario"; // <-- ESTO CAMBIA AUTOMÁTICAMENTE A LA VISTA DE INVENTARIO
+    vista = "Inventario";
   }
   function onSearchInput(){ currentPage=1; }
 
@@ -182,13 +172,11 @@
     cargando = true;
     errorRed = null;
     try {
-      // 1. Definimos las opciones base para la consulta de activos
       const opcionesActivos: any = {
         sort: '-created',
-        requestKey: null // Evita autocancelación
+        requestKey: null
       };
 
-      // 2. Solo agregamos el filtro si NO es "Todas"
       if (sucursal && sucursal !== 'Todas') {
         opcionesActivos.filter = `ubicacion = "${sucursal}"`;
       }
@@ -219,8 +207,6 @@
     }
   }
 
-  
-
   async function abrirAssetPorId(id: string) {
     let assetToOpen = todosLosDispositivos.find(a => a.id === id);
     if (!assetToOpen) {
@@ -236,7 +222,6 @@
   }
 
   async function aprobarShadowIt(item: any, tipoManual: string = 'PC') {
-    // Validar si el usuario actual es administrador
     const usuarioActual = pb.authStore.model;
     if (!usuarioActual || usuarioActual.role !== 'admin') {
       triggerToast("Acceso denegado: Se requiere rol de administrador para aprobar dispositivos", "is-danger");
@@ -256,7 +241,6 @@
         ? item.hostname 
         : `PC-${ipReal.replaceAll('.', '-')}`;
 
-      // 1. Crear el nuevo activo oficial
       const nuevoActivo = {
         hostname: hostnameAsignado,
         ip: ipReal,
@@ -271,7 +255,6 @@
 
       const resActivo = await pb.collection('activos').create(nuevoActivo);
 
-      // 2. Inicializar la evaluación de red
       try {
         await pb.collection('evaluaciones_red').create({
           activo: resActivo.id,
@@ -285,7 +268,6 @@
         console.warn("No se pudo instanciar evaluación inicial:", evalErr);
       }
 
-      // 3. Eliminar de la lista de Shadow IT
       if (item.id) {
         try {
           await pb.collection('shadow_it').delete(item.id);
@@ -372,8 +354,6 @@
     }
   }} />
 {:else}
-  
-  <!-- AQUI ESTÁ EL PASO E: Ocultar el Dashboard si urlVerId existe -->
   {#if !urlVerId}
     <Navbar bind:sucursal {sucursales} {stats} onSincronizar={() => actualizarDesdePocketBase(false)} />
 
@@ -402,11 +382,9 @@
       </div>
     </main>
   {:else}
-    <!-- ESTE ES EL FONDO AISLADO QUE VERÁ EL CELULAR AL ESCANEAR EL QR -->
     <div style="min-height: 100vh; background-color: #0f172a;"></div>
   {/if}
 
-  <!-- RUTA CONDICIONAL DE MODALES DE DETALLE Y AUDITORÍA -->
   {#if modalActivo && showModal}
     {#if modalActivo.tipo === 'Servidor' || modalActivo.tipo === 'NVR'}
       <ServerNvrModal 
@@ -427,7 +405,6 @@
     {/if}
   {/if}
 
-  <!-- MODAL DE EDICIÓN DE FICHA TÉCNICA (RF-01) -->
   {#if esAdmin}
     <EditAssetModal 
       bind:showEditModal 

@@ -2,10 +2,11 @@
   import PocketBase from 'pocketbase';
   import { generarActaPdf } from '../../../components/pdf-helper';
 
-  // En Svelte 5 con Runes, los parámetros de la ruta dinámica se reciben a través de las propiedades
   let { data, params } = $props();
 
-  const pb = new PocketBase(typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : 'http://127.0.0.1:8090');
+  const pbUrl = import.meta.env.PUBLIC_POCKETBASE_URL || 
+    (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8090` : '');
+  const pb = new PocketBase(pbUrl);
 
   let activoId = $derived(params.id);
 
