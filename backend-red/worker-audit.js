@@ -2,7 +2,8 @@ const { exec } = require('child_process');
 const http = require('http');
 const https = require('https');
 const tls = require('tls');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const EventModule = require('eventsource');
 global.EventSource = EventModule.EventSource || EventModule;

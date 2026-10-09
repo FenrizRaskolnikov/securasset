@@ -1,5 +1,6 @@
 const { exec } = require('child_process');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const PocketBase = require('pocketbase/cjs');
 
 const PB_URL = process.env.PUBLIC_POCKETBASE_INTERNAL_URL || process.env.PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
