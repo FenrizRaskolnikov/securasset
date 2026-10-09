@@ -1,0 +1,75 @@
+/* Bulma es la única framework CSS del proyecto */
+html { background: #f5f5f5; }
+.w-100, .w-full { width: 100%; }
+.is-spaced { padding: 0.75rem 1.5rem; }
+
+/* Helpers para el dashboard */
+.navbar-brand .title { letter-spacing: -0.5px; }
+
+/* Animaciones globales */
+.live-dot {
+  height: 10px; width: 10px;
+  background: #48c78e;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 6px rgba(72,199,142,.2);
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(72,199,142,.4); }
+  70% { box-shadow: 0 0 0 8px rgba(72,199,142,0); }
+  100% { box-shadow: 0 0 0 0 rgba(72,199,142,0); }
+}
+
+@keyframes pulse-glow {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(72, 199, 142, 0.4);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(72, 199, 142, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(72, 199, 142, 0);
+  }
+}
+
+.table td { vertical-align: middle; }
+.qr-placeholder {
+  width: 140px; height: 140px;
+  border: 2px dashed #dbdbdb;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  background: white;
+}
+
+/* Estilos globales para Modales Oscuros (SecurAsset) */
+.modal-dark { 
+  background-color: #1e293b; 
+  border-radius: 8px; 
+  overflow: hidden; 
+}
+.header-custom { 
+  background-color: #0f172a; 
+  border-bottom: 1px solid #334155; 
+  justify-content: space-between; 
+}
+.body-custom { 
+  background-color: #1e293b; 
+  color: #f8fafc; 
+}
+.footer-custom { 
+  background-color: #0f172a; 
+  border-top: 1px solid #334155; 
+}
+.table-dark-custom { 
+  background-color: transparent !important; 
+  color: #e2e8f0 !important; 
+}
+.table-dark-custom td { 
+  border-color: #334155 !important; 
+  padding: 0.4em 0.25em !important; 
+}

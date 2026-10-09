@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Configuración de variables de entorno secretas
+.env
+.env.*
+
+# Base de Datos local de PocketBase
+database/pb_data/
+pb_data/
+*.db
+*.db-shm
+*.db-wal
+
+# Build artifacts de SvelteKit
+.svelte-kit/
+build/
+
+# Archivos compilados y temporales del agente Python
+agente-endpoint/build/
+agente-endpoint/dist/
+agente-endpoint/*.spec
+__pycache__/
+*.pyc

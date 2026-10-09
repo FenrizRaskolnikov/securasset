@@ -1,0 +1,112 @@
+﻿erDiagram
+
+    _mfas {
+        string id PK
+        string collectionRef
+        string recordRef
+        string method
+        datetime created
+        datetime updated
+    }
+
+    _otps {
+        string id PK
+        string collectionRef
+        string recordRef
+        string password
+        string sentTo
+        datetime created
+        datetime updated
+    }
+
+    _externalAuths {
+        string id PK
+        string collectionRef
+        string recordRef
+        string provider
+        string providerId
+        datetime created
+        datetime updated
+    }
+
+    _authOrigins {
+        string id PK
+        string collectionRef
+        string recordRef
+        string fingerprint
+        datetime created
+        datetime updated
+    }
+
+    _superusers {
+        string id PK
+        string password
+        string tokenKey
+        string email
+        boolean emailVisibility
+        boolean verified
+        datetime created
+        datetime updated
+    }
+
+    users {
+        string id PK
+        string password
+        string tokenKey
+        string email
+        boolean emailVisibility
+        boolean verified
+        string name
+        string avatar
+        datetime created
+        datetime updated
+    }
+
+    activos {
+        string id PK
+        string hostname
+        string ip
+        string mac
+        string tipo
+        string ubicacion
+        string responsable
+        string estado_ciclo
+        number score_seguridad
+        datetime created
+        datetime updated
+    }
+
+    evaluaciones_endpoints {
+        string id PK
+        string relation FK
+        boolean bitlocker_activo
+        boolean edr_activo
+        string edr_Version
+        boolean parches_so_al_dia
+        boolean admin_locales_excesivos
+        datetime created
+        datetime updated
+    }
+
+    evaluaciones_red {
+        string id PK
+        string relation FK
+        json puertos_abiertos
+        boolean password_default
+        boolean firmware_actualizado
+        datetime created
+        datetime updated
+    }
+
+    shadow_it {
+        string id PK
+        string mac_detectada
+        string ip_detectada
+        datetime fecha_de_deteccion
+        string estado
+        datetime created
+        datetime updated
+    }
+
+    evaluaciones_endpoints }o--|| activos : "relation"
+    evaluaciones_red }o--|| activos : "relation"
