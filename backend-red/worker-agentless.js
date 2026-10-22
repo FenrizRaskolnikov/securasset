@@ -133,7 +133,7 @@ async function recolectarDatosPCLocal() {
   };
 }
 
-// 2. Escaneo remoto via Nmap/WinRM/WMI para PCs de la red
+//Escaneo remoto via Nmap/WinRM/WMI para PCs de la red
 async function descubrirYAuditarRemoto(ipRemota) {
   const cmdNmap = `nmap -p 22,135,5985 --open -T4 ${ipRemota}`;
   const salida = await ejecutarComando(cmdNmap);
