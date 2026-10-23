@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copiar package.json e instalar todas las dependencias necesarias
+COPY package*.json ./
+RUN npm install
+
+# Copiar el código fuente
+COPY . .
+
+ENV HOST=0.0.0.0
+ENV PORT=5173
+
+EXPOSE 5173
+
+# Iniciar directamente con Vite / SvelteKit en modo preview/dev adaptado
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

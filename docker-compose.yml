@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # 1. Servicio Base de Datos
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.pocketbase
+    container_name: secureinventory-pb
+    restart: always
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./database/pb_data:/pb/pb_data
+
+  # 2. Servicio Frontend (SvelteKit)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: secureinventory-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - PUBLIC_POCKETBASE_URL=http://pocketbase:8090
+    depends_on:
+      - pocketbase
+
+  # 3. Workers de Monitoreo (Node.js & Python)
+  worker-network:
+    build:
+      context: .
+      dockerfile: Dockerfile.workers
+    container_name: secureinventory-worker-network
+    command: node backend-red/worker-network.js
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - pocketbase
+
+  worker-agentless:
+    build:
+      context: .
+      dockerfile: Dockerfile.workers
+    container_name: secureinventory-worker-agentless
+    command: node backend-red/worker-agentless.js
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - pocketbase
+
+  worker-audit:
+    build:
+      context: .
+      dockerfile: Dockerfile.workers
+    container_name: secureinventory-worker-audit
+    command: node backend-red/worker-audit.js
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - pocketbase
+
+  agente-python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: secureinventory-agente-python
+    command: python agente-endpoint/agente.py
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - pocketbase

@@ -1,0 +1,12 @@
+FROM alpine:latest
+
+RUN apk update && apk add --no-cache unzip ca-certificates wget
+
+# Descarga la versión 0.40.1 exacta de PocketBase para Linux
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.40.1/pocketbase_0.40.1_linux_amd64.zip -O /tmp/pb.zip
+RUN unzip /tmp/pb.zip -d /pb/
+
+EXPOSE 8090
+
+# Inicia PocketBase escuchando en todas las interfaces de red del contenedor
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]

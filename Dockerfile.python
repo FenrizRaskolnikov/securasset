@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+
+COPY . .
+
+# Instala librerías externas que utiliza el agente de Python
+RUN pip install --no-cache-dir requests python-dotenv
